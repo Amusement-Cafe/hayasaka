@@ -21,3 +21,8 @@ cmd.push(['wow'], async (ctx, user) => {
     await ctx.send(ctx.msg.channel.id, sample(emotes.wow))
     return ctx.bot.deleteMessage(ctx.msg.channel.id, ctx.msg.id)
 })
+
+cmd.push(['fight'], async (ctx, user) => {
+    await ctx.send(ctx.msg.channel.id, sample(emotes.fight))
+    return ctx.bot.deleteMessage(ctx.msg.channel.id, ctx.msg.id)
+})
