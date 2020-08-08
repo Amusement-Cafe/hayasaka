@@ -24,9 +24,7 @@ const create = async () => {
         if(typeof content === 'object') {
             bot.createMessage(ch, { embed: content })
         } else {
-            bot.createMessage(ch, { embed: Object.assign({}, defaultEmbed, {
-                description: content,
-            })})
+            bot.createMessage(ch, content)
         }
     } 
     const err = (ch, msg) => bot.createMessage(ch, { embed: { description: msg, color: 16329259 } })
@@ -82,6 +80,34 @@ const create = async () => {
         }
 
         console.log(`[${user.username}]: ${emoji.name}`)
+    })
+
+    bot.on('', async () => {
+        let user = bot.users[member.id]
+
+        let ayyDBUser = await ayymembers.findOne({discord_id: member.id})
+        let acDBUser = await ucollection.findOne({discord_id: member.id})
+        let msg = ""
+
+        if(ayyDBUser) {
+            msg += `Welcome back, <@${user.id}>\nDid you forget something?`
+            if(ayyDBUser.joinCount > 2) 
+                sendMessage(settings.reportchannel, `User **${user.username} (${user.id})** joined server **${ayyDBUser.joinCount}** times :thinking:`)
+            ayymembers.update({discord_id: member.id}, {$inc: {joinCount: 1}})
+        } else {
+            msg += `Welcome, <@${user.id}>`
+            if(!acDBUser) {
+                msg += "\nPlease read <#475932375499538435>"
+                msg += "\nAlso here is your :doughnut:\nJoin **Amusement Club** gacha! Get started with `->claim` in <#351871635424542731> !"
+            } else {
+                if(acDBUser.hero) msg += ` and **${acDBUser.hero.name}** (level ${heroes.getHeroLevel(acDBUser.hero.exp)})!`
+                msg += "\nPlease read <#475932375499538435>"
+                msg += "\nYou can ask bot related questions in <#370742439679492096>\nTrade your cards in <#351957621437235200>"
+            }
+            //addNewUser(user);
+        }
+
+        //sendMessage(settings.mainchannel, msg);
     })
 
     bot.on('disconnect', () => {
