@@ -1,4 +1,5 @@
 const { rct, cmd }  = require('../core')
+const sample        = require('lodash.sample')
 
 const init = (ctx) => {
     const bot = ctx.bot
@@ -16,20 +17,26 @@ const init = (ctx) => {
         const guild = await ctx.modules.guild.fetchOrCreate(ctx, msg.channel.guild.id)
         const user = await ctx.modules.user.fetchOrCreate(ctx, msg.author.id)
 
-        if (!content.startsWith(ctx.prefix))
+        if (!content.startsWith(ctx.config.prefix))
             return
 
-        if(content.trim() === ctx.prefix)
-            return ctx.send(msg.channel.id, modules.sample(modules.sample(data.emotes)))
+        if(content.trim() === ctx.config.prefix)
+            return ctx.send(msg.channel.id, sample(sample(ctx.data.emotes)))
 
         const botUser = bot.users.find(x => x.id == msg.author.id)
+        const discordGuild = bot.guilds.find(x => x.id == msg.channel.guild.id)
+
+        const reply = (content) => ctx.sendEmbed(msg.channel.id, ctx.makeEmbed(content, 'default'))
+        const err = (content) => ctx.sendEmbed(msg.channel.id, ctx.makeEmbed(content, 'error'))
+        
         const isolatedCtx = Object.assign({}, ctx, {
-            msg, guild, botUser,
+            msg, guild, botUser, discordGuild,
+            reply, err,
         })
 
         try {
 
-            const args = content.slice(ctx.prefix.length, content.length).trim().split(' ')
+            const args = content.slice(ctx.config.prefix.length, content.length).trim().split(' ')
             await cmd.trigger(isolatedCtx, user, args)
 
         } catch(e) {

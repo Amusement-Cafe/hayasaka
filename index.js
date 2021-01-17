@@ -17,10 +17,16 @@ const create = async () => {
     const bot = new Eris(config.token, { maxShards: config.shards })
     const send = (ch, content) => bot.createMessage(ch, content)
     const sendEmbed = (ch, embed) => bot.createMessage(ch, { embed })
+    const makeEmbed = (content, type) => {
+        return Object.assign({}, data.embeds[type], {
+            description: content,
+        })
+    }
+    
 
     const ctx = {
-        bot, modules, mcn, data,
-        send, sendEmbed,
+        bot, modules, mcn, data, config,
+        send, sendEmbed, makeEmbed,
     }
 
     handlers.init(ctx)
