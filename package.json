@@ -10,7 +10,7 @@
   "author": "NoxCaos",
   "license": "ISC",
   "dependencies": {
-    "eris": "^0.13.3",
+    "eris": "^0.14.0",
     "lodash.sample": "^4.2.1",
     "mongoose": "^5.9.27"
   }

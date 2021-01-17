@@ -13,9 +13,17 @@ const init = (ctx) => {
         if (msg.author.id == bot.user.id)
             return
 
-        const content = msg.content.toLowerCase()
+        const content = msg.content
         const guild = await ctx.modules.guild.fetchOrCreate(ctx, msg.channel.guild.id)
         const user = await ctx.modules.user.fetchOrCreate(ctx, msg.author.id)
+        //const guildUser = ctx.modules.guild.getGuildUser(ctx, guild, user)
+
+        if(!guild.channels.default) {
+            guild.channels.default = msg.channel.id
+        }
+
+        //guildUser.messages++
+        await guild.save()
 
         if (!content.startsWith(ctx.config.prefix))
             return
@@ -35,15 +43,11 @@ const init = (ctx) => {
         })
 
         try {
-
             const args = content.slice(ctx.config.prefix.length, content.length).trim().split(' ')
             await cmd.trigger(isolatedCtx, user, args)
-
         } catch(e) {
             console.log(e)
         }
-
-        //console.log(`[${msg.author.username}]: ${content}`)
     })
 
     bot.on('messageReactionAdd', async (msg, emoji, userID) => {
@@ -60,30 +64,56 @@ const init = (ctx) => {
         console.log(`[${user.username}]: ${emoji.name}`)
     })
 
-    bot.on('guildMemberAdd', async () => {
-        let user = bot.users[member.id]
+    bot.on('guildMemberAdd', async (discordGuild, discordGuildMember) => {
+        const guild = await ctx.modules.guild.fetchOrCreate(ctx, guild.id)
+        const user = await ctx.modules.user.fetchOrCreate(ctx, discordGuildMember.id)
 
-        let ayyDBUser = await ayymembers.findOne({discord_id: member.id})
-        let acDBUser = await ucollection.findOne({discord_id: member.id})
-        let msg = ""
+        if(!guild.users.some(x => x.id == user.discord_id)) {
+            const guildUser = ctx.modules.guild.getGuildUser(ctx, guild, user)
+            const amusementUser = await ctx.modules.amusement.getAmusementUser(ctx)
 
-        if(ayyDBUser) {
-            msg += `Welcome back, **${user.username}**`
-            ayymembers.update({discord_id: member.id}, {$inc: {joinCount: 1}})
-        } else {
-            msg += `Welcome, <@${user.id}>`
-            if(!acDBUser) {
-                msg += "\nPlease read <#475932375499538435>"
-                msg += "\nAlso here is your :doughnut:\nJoin **Amusement Club** gacha! Get started with `->claim` in <#351871635424542731> !"
-            } else {
-                if(acDBUser.hero) msg += ` and **${acDBUser.hero.name}** (level ${heroes.getHeroLevel(acDBUser.hero.exp)})!`
-                msg += "\nPlease read <#475932375499538435>"
-                msg += "\nYou can ask bot related questions in <#370742439679492096>\nTrade your cards in <#351957621437235200>"
+            if(guild.channels.report) {
+                const report = []
+                report.push(`New user joined - **${user.username}**`)
+                report.push(`Is Amusement member: **${amusementUser != undefined}**`)
+
+                if(guild.channels.screen && !amusementUser) {
+                    report.push(`This user is awaiting verification. Use \`${ctx.config.prefix} verify ${user.discord_id}\` to verify.`)
+                }
+
+                ctx.sendEmbed(guild.channels.report, ctx.makeEmbed(report.join('\n'), 'default'))
             }
-            //addNewUser(user);
+
+            let channel = guild.channels.default
+            const msg = []
+            msg.push(`**${user.username}**, welcome to **${discordGuild.name}**!`)
+
+            if(guild.channels.screen && !amusementUser) {
+                msg.push(guild.messages.screen)
+                channel = guild.channels.screen
+            } else if(guild.channels.welcome) {
+                msg.push(guild.messages.welcome)
+                channel = guild.channels.welcome
+
+                if(guild.roles.verified) {
+                    await discordGuildMember.addRole(guild.roles.verified)
+                }
+            }
+
+            ctx.sendEmbed(channel, ctx.makeEmbed(msg.join('\n'), 'default'))
+
+        } else {
+            if(guild.roles.verified) {
+                await discordGuildMember.addRole(guild.roles.verified)
+            }
+
+            if(guild.channels.welcome) {
+                const msg = `Welcome back, **${user.username}**!`
+                ctx.sendEmbed(channel, ctx.makeEmbed(msg.join('\n'), 'default'))
+            }
         }
 
-        //sendMessage(settings.mainchannel, msg);
+        await guild.save()
     })
 
     bot.on('disconnect', () => {

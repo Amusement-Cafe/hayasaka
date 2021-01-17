@@ -14,6 +14,23 @@ const fetchOrCreate = async (ctx, guildId) => {
     return guild
 }
 
+const getGuildUser = (ctx, guild, user) => {
+    let guildUser = guild.users.find(x => x.id == user.discord_id)
+    if(!guildUser) {
+        guildUser = {
+            id: user.discord_id,
+            messages: 0,
+            joined: new Date(),
+            join_count: 1,
+        }
+
+        guild.users.push(guildUser)
+    }
+
+    return guildUser
+}
+
 module.exports = {
     fetchOrCreate,
+    getGuildUser,
 }

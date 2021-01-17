@@ -3,4 +3,5 @@ module.exports = {
     admin: require('./admin'),
     user: require('./user'),
     guild: require('./guild'),
+    amusement: require('./amusement'),
 }

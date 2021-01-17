@@ -5,14 +5,20 @@ module.exports = model('Guild', {
     created:        { type: Date },
 
     channels:       {
-                        report: String,
-                        welcome: String,
-                        default: String,
+                        report: { type: String, default: '' },
+                        welcome: { type: String, default: '' },
+                        screen: { type: String, default: '' },
+                        default: { type: String, default: '' },
+                    },
+
+    messages:       {
+                        welcome: { type: String, default: '' },
+                        screen: { type: String, default: '' },
                     },
 
     roles:          {
-                        validated: String,
-                        moderator: String,
+                        verified: { type: String, default: '' },
+                        moderator: { type: String, default: '' },
                     },
 
     users:          [{
