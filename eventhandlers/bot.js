@@ -1,33 +1,42 @@
+const { rct, cmd }  = require('../core')
+
 const init = (ctx) => {
     const bot = ctx.bot
-    
+
     bot.on('ready', async event => {
         await bot.editStatus('online', { name: 'peasants type', type: 3})
         console.log(`Bot is ready on **${bot.guilds.size} guild(s)** with **${bot.users.size} user(s)** using **${bot.shards.size} shard(s)**`)
     })
 
     bot.on('messageCreate', async (msg) => {
-        const content = msg.content.toLowerCase()
-        if (msg.author.id == bot.user.id || !content.startsWith('hayy'))
+        if (msg.author.id == bot.user.id)
             return
 
-        if(content.trim() === 'hayy')
-            return send(msg.channel.id, modules.sample(modules.sample(data.emotes)))
+        const content = msg.content.toLowerCase()
+        const guild = await ctx.modules.guild.fetchOrCreate(ctx, msg.channel.guild.id)
+        const user = await ctx.modules.user.fetchOrCreate(ctx, msg.author.id)
 
-        const user = bot.users.find(x => x.id == msg.author.id)
+        if (!content.startsWith(ctx.prefix))
+            return
+
+        if(content.trim() === ctx.prefix)
+            return ctx.send(msg.channel.id, modules.sample(modules.sample(data.emotes)))
+
+        const botUser = bot.users.find(x => x.id == msg.author.id)
+        const isolatedCtx = Object.assign({}, ctx, {
+            msg, guild, botUser,
+        })
+
         try {
 
-            const args = content.slice(4, content.length).trim().split(' ')
-            const isolatedCtx = Object.assign({}, ctx, {
-                msg,
-            })
-
+            const args = content.slice(ctx.prefix.length, content.length).trim().split(' ')
             await cmd.trigger(isolatedCtx, user, args)
+
         } catch(e) {
             console.log(e)
         }
 
-        console.log(`[${msg.author.username}]: ${content}`)
+        //console.log(`[${msg.author.username}]: ${content}`)
     })
 
     bot.on('messageReactionAdd', async (msg, emoji, userID) => {

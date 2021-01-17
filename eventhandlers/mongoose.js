@@ -1,5 +1,11 @@
+const mongoose  = require('mongoose')
+
 const init = (ctx) => {
-    ctx.mcn.on('error', err => {
+    mongoose.connection.on('error', err => {
         console.log(err)
     })
+}
+
+module.exports = {
+    init,
 }
