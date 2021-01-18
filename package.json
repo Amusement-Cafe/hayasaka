@@ -11,6 +11,7 @@
   "license": "ISC",
   "dependencies": {
     "eris": "^0.14.0",
+    "lodash.pick": "^4.4.0",
     "lodash.sample": "^4.2.1",
     "mongoose": "^5.9.27"
   }

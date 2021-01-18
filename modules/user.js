@@ -4,6 +4,8 @@ const fetchOrCreate = async (ctx, userid) => {
     let user = await User.findOne({ discord_id: userid })
     const botUser = ctx.bot.users.find(x => x.id == userid)
 
+    if(!botUser) return
+
     if (!user) {
         user = new User()
         user.username = botUser.username
@@ -21,6 +23,16 @@ const fetchOrCreate = async (ctx, userid) => {
     return user
 }
 
+const isOwner = (ctx, user) => {
+    return ctx.discordGuild.ownerID === user.discord_id
+}
+
+const isModerator = (ctx, user) => {
+    return ctx.discordGuildMember.roles.includes(ctx.guild.roles.moderator)
+}
+
 module.exports = {
     fetchOrCreate,
+    isOwner,
+    isModerator,
 }

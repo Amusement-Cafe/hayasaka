@@ -16,13 +16,16 @@ const init = (ctx) => {
         const content = msg.content
         const guild = await ctx.modules.guild.fetchOrCreate(ctx, msg.channel.guild.id)
         const user = await ctx.modules.user.fetchOrCreate(ctx, msg.author.id)
-        //const guildUser = ctx.modules.guild.getGuildUser(ctx, guild, user)
+
+        if(!user) return
+
+        const guildUser = ctx.modules.guild.getGuildUser(ctx, guild, user)
 
         if(!guild.channels.default) {
             guild.channels.default = msg.channel.id
         }
 
-        //guildUser.messages++
+        guildUser.messages++
         await guild.save()
 
         if (!content.startsWith(ctx.config.prefix))
@@ -31,16 +34,28 @@ const init = (ctx) => {
         if(content.trim() === ctx.config.prefix)
             return ctx.send(msg.channel.id, sample(sample(ctx.data.emotes)))
 
-        const botUser = bot.users.find(x => x.id == msg.author.id)
-        const discordGuild = bot.guilds.find(x => x.id == msg.channel.guild.id)
-
         const reply = (content) => ctx.sendEmbed(msg.channel.id, ctx.makeEmbed(content, 'default'))
         const err = (content) => ctx.sendEmbed(msg.channel.id, ctx.makeEmbed(content, 'error'))
-        
+
+        const botUser = bot.users.find(x => x.id == msg.author.id)
+        const discordGuild = bot.guilds.find(x => x.id == msg.channel.guild.id)
+        const discordGuildMember = discordGuild.members.find(x => x.id == user.discord_id)
+
         const isolatedCtx = Object.assign({}, ctx, {
-            msg, guild, botUser, discordGuild,
+            msg, guild, botUser, discordGuild, discordGuildMember,
             reply, err,
         })
+
+        if(!(ctx.modules.user.isOwner(isolatedCtx, user) || ctx.modules.user.isModerator(isolatedCtx, user))) {
+            const reply = []
+            reply.push(`Hayasaka commands are available only for guild owner`)
+
+            if(guild.roles.moderator) {
+                reply.push(`or users with role @${discordGuild.roles.find(x => x.id === guild.roles.moderator).name}`)
+            }
+
+            return err(reply.join(' '))
+        }
 
         try {
             const args = content.slice(ctx.config.prefix.length, content.length).trim().split(' ')
@@ -65,12 +80,12 @@ const init = (ctx) => {
     })
 
     bot.on('guildMemberAdd', async (discordGuild, discordGuildMember) => {
-        const guild = await ctx.modules.guild.fetchOrCreate(ctx, guild.id)
+        const guild = await ctx.modules.guild.fetchOrCreate(ctx, discordGuild.id)
         const user = await ctx.modules.user.fetchOrCreate(ctx, discordGuildMember.id)
 
         if(!guild.users.some(x => x.id == user.discord_id)) {
             const guildUser = ctx.modules.guild.getGuildUser(ctx, guild, user)
-            const amusementUser = await ctx.modules.amusement.getAmusementUser(ctx)
+            const amusementUser = await ctx.modules.amusement.getAmusementUser(ctx, discordGuildMember.id)
 
             if(guild.channels.report) {
                 const report = []
@@ -81,7 +96,7 @@ const init = (ctx) => {
                     report.push(`This user is awaiting verification. Use \`${ctx.config.prefix} verify ${user.discord_id}\` to verify.`)
                 }
 
-                ctx.sendEmbed(guild.channels.report, ctx.makeEmbed(report.join('\n'), 'default'))
+                await ctx.sendEmbed(guild.channels.report, ctx.makeEmbed(report.join('\n'), 'default'))
             }
 
             let channel = guild.channels.default
@@ -100,16 +115,26 @@ const init = (ctx) => {
                 }
             }
 
-            ctx.sendEmbed(channel, ctx.makeEmbed(msg.join('\n'), 'default'))
+            await ctx.sendEmbed(channel, ctx.makeEmbed(msg.join('\n'), 'default'))
 
         } else {
+            const guildUser = ctx.modules.guild.getGuildUser(ctx, guild, user)
+            guildUser.join_count++
+
             if(guild.roles.verified) {
-                await discordGuildMember.addRole(guild.roles.verified)
+                await discordGuildMember.addRole(guild.roles.verified, `Verified automatically: returning user`)
+            }
+
+            if(guild.channels.report) {
+                const report = []
+                report.push(`User returned - **${discordGuildMember.username}**. Join count: **${guildUser.join_count}**`)
+
+                await ctx.sendEmbed(guild.channels.report, ctx.makeEmbed(report.join('\n'), 'default'))
             }
 
             if(guild.channels.welcome) {
                 const msg = `Welcome back, **${user.username}**!`
-                ctx.sendEmbed(channel, ctx.makeEmbed(msg.join('\n'), 'default'))
+                await ctx.sendEmbed(guild.channels.welcome, ctx.makeEmbed(msg, 'default'))
             }
         }
 

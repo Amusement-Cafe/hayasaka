@@ -1,6 +1,17 @@
 const { cmd }  = require('../core')
 
+cmd.push(['set'], async (ctx, user, ...args) => {
+    if(!ctx.modules.user.isOwner(ctx, user))
+        return ctx.err(`This command is only available for guild owner.`)
+
+    return ctx.reply(`Usage: \`${ctx.config.prefix} set [channel | role | message]\``)
+
+})
+
 cmd.push(['set', 'channel'], async (ctx, user, ...args) => {
+    if(!ctx.modules.user.isOwner(ctx, user))
+        return ctx.err(`This command is only available for guild owner.`)
+
     const channelType = args[0]
     const channelId = args[1]
     const possibleTypes = Object.keys(ctx.guild.channels).filter(x => !x.startsWith('$'))
@@ -25,6 +36,9 @@ cmd.push(['set', 'channel'], async (ctx, user, ...args) => {
 })
 
 cmd.push(['set', 'message'], async (ctx, user, ...args) => {
+    if(!ctx.modules.user.isOwner(ctx, user))
+        return ctx.err(`This command is only available for guild owner.`)
+
     const messageType = args.shift()
     const message = args.join(' ')
     const possibleTypes = Object.keys(ctx.guild.messages).filter(x => !x.startsWith('$'))
@@ -46,6 +60,9 @@ cmd.push(['set', 'message'], async (ctx, user, ...args) => {
 })
 
 cmd.push(['set', 'role'], async (ctx, user, ...args) => {
+    if(!ctx.modules.user.isOwner(ctx, user))
+        return ctx.err(`This command is only available for guild owner.`)
+
     const roleType = args[0]
     const roleId = args[1]
     const possibleTypes = Object.keys(ctx.guild.roles).filter(x => !x.startsWith('$'))
