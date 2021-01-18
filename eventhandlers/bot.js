@@ -75,8 +75,6 @@ const init = (ctx) => {
         } catch (e) {
             console.log(e)
         }
-
-        console.log(`[${user.username}]: ${emoji.name}`)
     })
 
     bot.on('guildMemberAdd', async (discordGuild, discordGuildMember) => {
