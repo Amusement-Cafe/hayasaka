@@ -30,7 +30,7 @@ const trigger = (ctx, user, args) => {
     }
 
     if (!cursor.hasOwnProperty('_callback')) {
-        return ctx.err(ctx.msg.channel.id, `Unknown command`)
+        return ctx.err(`Unknown command \`${args.join(' ')}\``)
     }
 
     const newArgs = [ctx, user || { }].concat(args)

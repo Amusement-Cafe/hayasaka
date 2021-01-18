@@ -1,8 +1,9 @@
 
 const message = async (ctx, user, msg, channel) => {
+    const originalLink = `https://discordapp.com/channels/${msg.channel.guild.id}/${msg.channel.id}/${msg.id}`
     const emb = {
         color: 7121879,
-        description: msg.content,
+        description: `${msg.content} \n\n[Original Message](${originalLink})`,
         author: {
             name: `${msg.author.username} 🔁 ${user.username}`,
             icon_url: `https://cdn.discordapp.com/avatars/${msg.author.id}/${msg.author.avatar}.png`
@@ -12,6 +13,7 @@ const message = async (ctx, user, msg, channel) => {
             text: (new Date(msg.timestamp)).toLocaleString()
         }
     }
+    //
 
     if(msg.attachments.length > 0) {
         console.log(msg.attachments[0].url)
@@ -22,7 +24,7 @@ const message = async (ctx, user, msg, channel) => {
         emb.description = msg.embeds[0].description;
     }
 
-    return ctx.send(channel || msg.channel.id, emb)
+    return ctx.sendEmbed(channel || msg.channel.id, emb)
 }
 
 module.exports = { 
