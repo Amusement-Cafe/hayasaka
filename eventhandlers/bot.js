@@ -65,11 +65,10 @@ const init = (ctx) => {
         }
     })
 
-    bot.on('messageReactionAdd', async (msg, emoji, userID) => {
-        if (userID == bot.user.id)
+    bot.on('messageReactionAdd', async (msg, emoji, user) => {
+        if (user.id == bot.user.id)
             return
 
-        const user = bot.users.find(x => x.id == userID)
         try {
             await rct.trigger(ctx, user, msg, emoji.name)
         } catch (e) {
