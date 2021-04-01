@@ -25,7 +25,10 @@ cmd.push(['verify'], async (ctx, user, ...args) => {
     await guildMember.addRole(roleId, `Verified by ${user.username}`)
 
     if(ctx.guild.channels.welcome) {
-        await ctx.sendEmbed(ctx.guild.channels.welcome, ctx.makeEmbed(ctx.guild.messages.welcome, 'default'))
+        const msg = []
+        msg.push(`**${guildMember.username}**, welcome to **${ctx.discordGuild.name}**!`)
+        msg.push(ctx.guild.messages.welcome)
+        await ctx.sendEmbed(ctx.guild.channels.welcome, ctx.makeEmbed(msg.join('\n'), 'default'))
     }
 
     return ctx.reply(`User **${guildMember.username}** has been verified!`)

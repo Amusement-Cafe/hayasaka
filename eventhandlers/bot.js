@@ -81,7 +81,7 @@ const init = (ctx) => {
         const user = await ctx.modules.user.fetchOrCreate(ctx, discordGuildMember.id)
 
         try {
-            const guildUser = ctx.modules.guild.getGuildUser(ctx, guild, user)
+            let guildUser = guild.users.find(x => x.id == user.discord_id)
             const amusementUser = await ctx.modules.amusement.getAmusementUser(ctx, discordGuildMember.id)
 
             if(guildUser) {
@@ -113,7 +113,8 @@ const init = (ctx) => {
                 await ctx.sendEmbed(channel || guild.channels.default, ctx.makeEmbed(msg.join('\n'), 'default'))
 
             } else {
-
+                guildUser = ctx.modules.guild.getGuildUser(ctx, guild, user)
+                
                 if(guild.channels.report) {
                     const report = []
                     report.push(`New user joined - **${user.username}**`)
