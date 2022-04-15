@@ -8,11 +8,7 @@ const handlers      = require('./eventhandlers')
 
 const create = async () => {
 
-    const mcn = await mongoose.connect(config.mongoUri, { 
-        useNewUrlParser: true, 
-        useUnifiedTopology: true, 
-        useFindAndModify: false 
-    })
+    const mcn = await mongoose.connect(config.mongoUri)
 
     const bot = new Eris(config.token, { maxShards: config.shards })
     const send = (ch, content) => bot.createMessage(ch, content)
