@@ -13,6 +13,6 @@
     "eris": "^0.14.0",
     "lodash.pick": "^4.4.0",
     "lodash.sample": "^4.2.1",
-    "mongoose": "^6.3.0"
+    "mongoose": "^6.12.0"
   }
 }
